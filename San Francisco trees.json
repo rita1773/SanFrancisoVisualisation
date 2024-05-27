@@ -1,0 +1,238 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 1900,
+  "height": 1200,
+  "title": {
+    "text": "San Francisco Trees",
+    "fontSize": 25,
+    "anchor": "center",
+    "align": "center"
+  },
+  "data": {
+    "url": "https://raw.githubusercontent.com/rita1773/infovis/main/cleaned_tree.csv"
+  },
+  "vconcat": [
+    {
+      "layer": [
+        {
+          "data": {
+            "url": "https://raw.githubusercontent.com/blackmad/neighborhoods/master/san-francisco.geojson",
+            "format": {"type": "json"}
+          },
+          "projection": {"type": "mercator"},
+          "mark": {"type": "geoshape", "fill": "lightgrey", "stroke": "white"},
+          "encoding": {"color": {"value": "none"}}
+        },
+        {
+          "mark": {"type": "circle", "tooltip": true},
+          "encoding": {
+            "color": {
+              "condition": {
+                "param": "brush",
+                "title": "Legal Status",
+                "field": "qLegalStatus",
+                "type": "nominal",
+                "scale": {
+                  "range": [
+                    "#89CE00",
+                    "#0073e6",
+                    "#e6308a",
+                    "#b51963",
+                    "#8b95f6",
+                    "#4d186a",
+                    "#ff4500",
+                    "#d7dd98"
+                  ]
+                }
+              },
+              "value": "grey"
+            },
+            "size": {
+              "title": "Diameter at breast height",
+              "field": "DBH",
+              "type": "quantitative",
+              "legend": {
+                "orient": "none",
+                "direction": "vertical",
+                "legendX": 400,
+                "legendY": 145
+              }
+            },
+            "x": {
+              "field": "Latitude",
+              "title": "Latitude",
+              "type": "quantitative",
+              "axis": {
+                "grid": false,
+                "ticks": false,
+                "domain": false,
+                "labels": false
+              },
+              "scale": {"zero": false}
+            },
+            "y": {
+              "field": "Longitude",
+              "title": "Longitude",
+              "type": "quantitative",
+              "axis": {
+                "grid": false,
+                "ticks": false,
+                "domain": false,
+                "labels": false
+              },
+              "scale": {"zero": false}
+            },
+            "scale": {"paddingInner": 0.02, "paddingOuter": 0},
+            "opacity": {
+              "condition": {"param": "legend2", "value": 1},
+              "value": 0.05
+            },
+            "tooltip": [
+              {"field": "qSpecies", "type": "nominal", "title": "Species Type"},
+              {
+                "field": "qLegalStatus",
+                "type": "nominal",
+                "title": "Legal Status"
+              },
+              {"field": "qAddress", "type": "nominal", "title": "Address"},
+              {"field": "TreeID", "type": "quantitative", "title": "Tree ID"},
+              {"field": "Location", "type": "nominal", "title": "Location"},
+              {"field": "qCaretaker", "type": "nominal", "title": "Care Taker"},
+              {
+                "field": "qCareAssistant",
+                "type": "nominal",
+                "title": "Care Assistant"
+              },
+              {"field": "PlotSize", "type": "nominal", "title": "Plot Size"}
+            ]
+          },
+          "params": [
+            {
+              "name": "brush",
+              "select": {"type": "interval", "encodings": ["x"]}
+            },
+            {
+              "name": "legend2",
+              "select": {"type": "point", "fields": ["qLegalStatus"]},
+              "bind": "legend"
+            }
+          ],
+          "transform": [
+            {"filter": {"param": "click"}},
+            {"filter": {"param": "brushYear"}}
+          ]
+        }
+      ],
+      "width": 380,
+      "height": 380
+    },
+    {
+      "encoding": {
+        "align": "",
+        "color": {
+          "condition": {
+            "param": "click",
+            "field": "qLegalStatus",
+            "legend": null,
+            "scale": {
+              "range": [
+                "#89CE00",
+                "#0073e6",
+                "#e6308a",
+                "#b51963",
+                "#8b95f6",
+                "#4d186a",
+                "#ff4500",
+                "#d7dd98"
+              ]
+            }
+          }
+        },
+        "x": {
+          "aggregate": "count",
+          "field": "TreeID",
+          "title": "Count of Trees",
+          "axis": {"grid": true}
+        },
+        "y": {
+          "title": "Legal Status",
+          "field": "qLegalStatus",
+          "sort": {"op": "count", "order": "descending"}
+        },
+        "tooltip": [
+          {"aggregate": "count", "field": "TreeID", "title": "Trees Count"},
+          {"field": "qLegalStatus", "type": "nominal", "title": "Legal Status"}
+        ]
+      },
+      "width": 400,
+      "height": 130,
+      "mark": "bar",
+      "params": [
+        {"name": "click", "select": {"type": "point", "encodings": ["color"]}}
+      ],
+      "transform": [
+        {"filter": {"param": "brush"}},
+        {"filter": {"param": "brushYear"}}
+      ]
+    },
+    {
+      "width": 400,
+      "height": 200,
+      "mark": "line",
+      "params": [
+        {
+          "name": "careTakerFilter",
+          "select": {"type": "point", "fields": ["qCaretaker"]},
+          "bind": "legend"
+        },
+        {
+          "name": "brushYear",
+          "select": {"type": "interval", "encodings": ["x"]}
+        }
+      ],
+      "transform": [{"filter": {"param": "brush"}}],
+      "title": {
+        "text": "Trees Planted in each Year",
+        "fontSize": 15,
+        "anchor": "center",
+        "align": "center"
+      },
+      "encoding": {
+        "x": {
+          "timeUnit": "yearmonth",
+          "field": "PlantDate",
+          "title": "Year",
+          "axis": {"grid": false, "format": "%Y", "tickSize": 5}
+        },
+        "y": {
+          "aggregate": "count",
+          "field": "TreeID",
+          "type": "quantitative",
+          "title": "Total Trees",
+          "axis": {"values": 0, "grid": true}
+        },
+        "color": {
+          "condition": {
+            "param": "brushYear",
+            "field": "qCaretaker",
+            "title": "Care Taker",
+            "scale": {"scheme": "dark2"}
+          }
+        },
+        "opacity": {
+          "condition": {"param": "careTakerFilter", "value": 1},
+          "value": 0.1
+        },
+        "tooltip": [
+          {"aggregate": "count", "field": "TreeID", "title": "Trees Count"},
+          {"field": "qCaretaker", "type": "nominal", "title": "Care Taker"}
+        ]
+      }
+    }
+  ],
+  "resolve": {"scale": {"color": "independent"}},
+  "config": {
+    "view": {"stroke": "transparent"},
+    "legend": {"labelFontSize": 11, "titleFontSize": 13, "labelAlign": "left"}
+  }
+}
